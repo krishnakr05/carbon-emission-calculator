@@ -1,0 +1,7 @@
+{
+  "car": 0.21,
+  "bus": 0.10,
+  "flight": 0.25,
+  "electricity": 0.85,
+  "gas": 2.3
+}
