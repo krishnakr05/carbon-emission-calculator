@@ -2,73 +2,97 @@
 <html>
 <head>
     <title>Carbon Emission Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px auto;
-            width: 400px;
-            background: #f5f5f5;
-            padding: 30px;
-            border-radius: 10px;
-        }
-        h2 { text-align: center; }
-        label { display: block; margin-top: 10px; }
-        input {
-            width: 100%;
-            padding: 8px;
-            margin-top: 4px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
-        button {
-            margin-top: 15px;
-            width: 100%;
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .result {
-            background: white;
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: bold;
-        }
+        body { background-color: #f8f9fa; }
+        h2, h4 { color: #333; }
     </style>
 </head>
 <body>
-
-    <h2>Carbon Emission Calculator</h2>
-
-    <form action="/calculate" method="post">
-        <label>Car travel (km):</label>
-        <input type="number" name="car" placeholder="e.g. 100">
-
-        <label>Bus travel (km):</label>
-        <input type="number" name="bus" placeholder="e.g. 50">
-
-        <label>Flight travel (km):</label>
-        <input type="number" name="flight" placeholder="e.g. 200">
-
-        <label>Electricity usage (kWh):</label>
-        <input type="number" name="electricity" placeholder="e.g. 30">
-
-        <label>Gas usage (litres):</label>
-        <input type="number" name="gas" placeholder="e.g. 10">
-
-        <button type="submit">Calculate Emission</button>
-    </form>
-
-    {% if total is defined %}
-        <div class="result">
-            🌿 Your total CO₂ emission is: <br>
-            <span style="color:green;">{{ total }} kg CO₂</span>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Carbon Emission Calculator</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card p-4 mb-4">
+                <h4>Enter Your Activities</h4>
+                <form method="post" action="/calculate">
+                    <div class="mb-3">
+                        <label>Car travel (km)</label>
+                        <input type="number" name="car" class="form-control" placeholder="e.g. 100" value="{{ data.car if data else 0 }}">
+                    </div>
+                    <div class="mb-3">
+                        <label>Bus travel (km)</label>
+                        <input type="number" name="bus" class="form-control" placeholder="e.g. 50" value="{{ data.bus if data else 0 }}">
+                    </div>
+                    <div class="mb-3">
+                        <label>Flight travel (km)</label>
+                        <input type="number" name="flight" class="form-control" placeholder="e.g. 200" value="{{ data.flight if data else 0 }}">
+                    </div>
+                    <div class="mb-3">
+                        <label>Electricity usage (kWh)</label>
+                        <input type="number" name="electricity" class="form-control" placeholder="e.g. 30" value="{{ data.electricity if data else 0 }}">
+                    </div>
+                    <div class="mb-3">
+                        <label>Gas usage (litres)</label>
+                        <input type="number" name="gas" class="form-control" placeholder="e.g. 10" value="{{ data.gas if data else 0 }}">
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Calculate</button>
+                </form>
+            </div>
         </div>
-    {% endif %}
 
+        <div class="col-md-6">
+            {% if total is defined %}
+            <div class="card p-4 mb-4">
+                <h4>Results</h4>
+                <p>Total CO₂ Emission: <strong>{{ total }} kg</strong></p>
+                <p>Recommendation: <em>{{ recommendation }}</em></p>
+                <canvas id="emissionChart" height="200"></canvas>
+            </div>
+
+            <!-- JSON data for JS -->
+            <script type="application/json" id="emission-data">
+                {{ emissionData | tojson | safe }}
+            </script>
+
+            <script>
+            (function() {
+                let emissionData = [0,0,0,0,0];
+                const dataEl = document.getElementById('emission-data');
+                if (dataEl && dataEl.textContent.trim().length) {
+                    emissionData = JSON.parse(dataEl.textContent);
+                }
+
+                const ctx = document.getElementById('emissionChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Car','Bus','Flight','Electricity','Gas'],
+                        datasets: [{
+                            label: 'Emission (kg CO₂)',
+                            data: emissionData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                        }]
+                    },
+                    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+                });
+            })();
+            </script>
+
+            <div class="card p-4 mt-4">
+                <h5>Recent Activities</h5>
+                <ul class="list-group">
+                    {% for act in activities %}
+                        <li class="list-group-item">
+                            {{ act.date.strftime('%Y-%m-%d %H:%M') }} - Total: {{ act.total_emission }} kg CO₂
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 </body>
 </html>
