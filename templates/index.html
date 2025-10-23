@@ -10,13 +10,42 @@
     </style>
 </head>
 <body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" href="{{ url_for('home') }}">CarbonCalc</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        {% if current_user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
 <div class="container mt-5">
     <h2 class="text-center mb-4">Carbon Emission Calculator</h2>
     <div class="row">
         <div class="col-md-6">
             <div class="card p-4 mb-4">
                 <h4>Enter Your Activities</h4>
-                <form method="post" action="/calculate">
+                <form method="post" action="{{ url_for('home') }}">
                     <div class="mb-3">
                         <label>Car travel (km)</label>
                         <input type="number" name="car" class="form-control" placeholder="e.g. 100" value="{{ data.car if data else 0 }}">
